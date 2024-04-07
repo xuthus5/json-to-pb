@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>JSON-to-Proto: Convert JSON to ProtoBuf Message</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/firacode/6.2.0/fira_code.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.8.0/languages/protobuf.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.8.0/styles/github.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fira Code', Avenir, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        table {
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        th {
+            padding: 15px;
+            background: #375EAB;
+            text-align: center;
+            color: #FFF;
+            font-size: 20px;
+        }
+
+        td {
+            width: 50%;
+            vertical-align: top;
+        }
+
+        .copy {
+            color: #ffffff;
+            margin-left: 8px;
+        }
+
+        #editor {
+            width: 100%;
+            height: 614px !important;
+        }
+
+        #output {
+            background-color: #e9ecef;
+            /*white-space: pre;*/
+            width: 100%;
+            height: 614px;
+            overflow: scroll;
+            tab-size: 4;
+            text-align: left;
+            padding-left: 8px;
+        }
+
+        .card-body {
+            padding: 0;
+        }
+
+        textarea {
+            tab-size: 4;
+            text-align: left;
+        }
+
+        .text-default-placeholder {
+            color: #777;
+            font-family: "Courier New", Courier, monospace;
+        }
+
+        .width45 {
+            width: 45%;
+        }
+
+        .width10 {
+            width: 10%;
+            font-size: 22px;
+        }
+
+        .width50 {
+            width: 50%;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <table>
+        <tbody>
+        <tr>
+            <th class="width45">JSON</th>
+            <th class="width10">--></th>
+            <th class="width45">Protobuf Message<button
+                    class="copy btn btn-secondary"
+                    type="button"
+                    onclick="copy_clipboard()"
+            >Copy</button></th>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="app">
+    <table>
+        <tbody>
+        <tr>
+            <td class="width50">
+                <textarea id="editor" placeholder="Paste JSON here"></textarea>
+            </td>
+            <td class="width50">
+                <div class="card bg-light text-dark" id="output">
+                    <div class="card-body" id="result">
+                        <p class="card-text text-left mt-2 ml-3 text-default-placeholder">Protobuf Message will appear here.</p>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <button type="button" onclick="data_submit()" class="btn btn-primary mt-3">Convert</button>
+</div>
+
+<footer class="mt-5 mb-3">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-lg-6 col-xl-6 offset-3"><p> This tool instantly converts JSON into a Protobuf
+                Message definition. Paste a JSON structure on the left and the equivalent Protobuf Message will be
+                generated to the right, which you can paste into your program. The script has to make some
+                assumptions, so double-check the output! </p>
+                <p> Try converting JSON from the Example <a class="text-danger" onclick="preset()">DataSet</a>. </p>
+                <p> © 2024 <a href="https://xuthus.cc" target="_blank">Young Xu</a> • <a
+                        href="https://github.com/xuthus5/json2pb" target="_blank">View on GitHub</a></p></div>
+        </div>
+    </div>
+    You can find me on <a href="https://github.com/xuthus5" target="_blank">GitHub</a>.
+</footer>
+</body>
+<script>
+    function xhr_get(text) {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/convert", false);
+        xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8")
+        let xBody;
+        xhr.onload = () => {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                console.log(xhr.response);
+                xBody = xhr.response
+            } else {
+                console.log(`Error: ${xhr.status}`);
+                xBody = xhr.response
+            }
+        };
+        xhr.send(text);
+        return xBody
+    }
+
+    function copy_clipboard() {
+        navigator.clipboard.writeText(document.getElementById('result').innerText);
+        alert("copy to clipboard success");
+    }
+
+    function data_submit() {
+        let text = document.getElementById('editor').value;
+        let content = xhr_get(text);
+        document.getElementById('result').innerHTML = "<pre><code class=\"protobuf\">" + content + "</code></pre>";
+        hljs.highlightAll();
+    }
+
+    function preset() {
+        const dataset = `{
+  "id": 62117812,
+  "node_id": "MDEwOlJlcG9zaXRvcnk2MjExNzgxMg==",
+  "name": "pulsar",
+  "full_name": "apache/pulsar",
+  "private": false,
+  "owner": {
+    "login": "apache",
+    "id": 47359,
+    "node_id": "MDEyOk9yZ2FuaXphdGlvbjQ3MzU5",
+    "avatar_url": "https://avatars.githubusercontent.com/u/47359?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/apache",
+    "html_url": "https://github.com/apache",
+    "followers_url": "https://api.github.com/users/apache/followers",
+    "following_url": "https://api.github.com/users/apache/following{/other_user}",
+    "gists_url": "https://api.github.com/users/apache/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/apache/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/apache/subscriptions",
+    "organizations_url": "https://api.github.com/users/apache/orgs",
+    "repos_url": "https://api.github.com/users/apache/repos",
+    "events_url": "https://api.github.com/users/apache/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/apache/received_events",
+    "type": "Organization",
+    "site_admin": false
+  },
+  "html_url": "https://github.com/apache/pulsar",
+  "description": "Apache Pulsar - distributed pub-sub messaging system",
+  "fork": false,
+  "url": "https://api.github.com/repos/apache/pulsar",
+  "forks_url": "https://api.github.com/repos/apache/pulsar/forks",
+  "keys_url": "https://api.github.com/repos/apache/pulsar/keys{/key_id}",
+  "collaborators_url": "https://api.github.com/repos/apache/pulsar/collaborators{/collaborator}",
+  "teams_url": "https://api.github.com/repos/apache/pulsar/teams",
+  "hooks_url": "https://api.github.com/repos/apache/pulsar/hooks",
+  "issue_events_url": "https://api.github.com/repos/apache/pulsar/issues/events{/number}",
+  "events_url": "https://api.github.com/repos/apache/pulsar/events",
+  "assignees_url": "https://api.github.com/repos/apache/pulsar/assignees{/user}",
+  "branches_url": "https://api.github.com/repos/apache/pulsar/branches{/branch}",
+  "tags_url": "https://api.github.com/repos/apache/pulsar/tags",
+  "blobs_url": "https://api.github.com/repos/apache/pulsar/git/blobs{/sha}",
+  "git_tags_url": "https://api.github.com/repos/apache/pulsar/git/tags{/sha}",
+  "git_refs_url": "https://api.github.com/repos/apache/pulsar/git/refs{/sha}",
+  "trees_url": "https://api.github.com/repos/apache/pulsar/git/trees{/sha}",
+  "statuses_url": "https://api.github.com/repos/apache/pulsar/statuses/{sha}",
+  "languages_url": "https://api.github.com/repos/apache/pulsar/languages",
+  "stargazers_url": "https://api.github.com/repos/apache/pulsar/stargazers",
+  "contributors_url": "https://api.github.com/repos/apache/pulsar/contributors",
+  "subscribers_url": "https://api.github.com/repos/apache/pulsar/subscribers",
+  "subscription_url": "https://api.github.com/repos/apache/pulsar/subscription",
+  "commits_url": "https://api.github.com/repos/apache/pulsar/commits{/sha}",
+  "git_commits_url": "https://api.github.com/repos/apache/pulsar/git/commits{/sha}",
+  "comments_url": "https://api.github.com/repos/apache/pulsar/comments{/number}",
+  "issue_comment_url": "https://api.github.com/repos/apache/pulsar/issues/comments{/number}",
+  "contents_url": "https://api.github.com/repos/apache/pulsar/contents/{+path}",
+  "compare_url": "https://api.github.com/repos/apache/pulsar/compare/{base}...{head}",
+  "merges_url": "https://api.github.com/repos/apache/pulsar/merges",
+  "archive_url": "https://api.github.com/repos/apache/pulsar/{archive_format}{/ref}",
+  "downloads_url": "https://api.github.com/repos/apache/pulsar/downloads",
+  "issues_url": "https://api.github.com/repos/apache/pulsar/issues{/number}",
+  "pulls_url": "https://api.github.com/repos/apache/pulsar/pulls{/number}",
+  "milestones_url": "https://api.github.com/repos/apache/pulsar/milestones{/number}",
+  "notifications_url": "https://api.github.com/repos/apache/pulsar/notifications{?since,all,participating}",
+  "labels_url": "https://api.github.com/repos/apache/pulsar/labels{/name}",
+  "releases_url": "https://api.github.com/repos/apache/pulsar/releases{/id}",
+  "deployments_url": "https://api.github.com/repos/apache/pulsar/deployments",
+  "created_at": "2016-06-28T07:00:03Z",
+  "updated_at": "2024-02-07T10:26:25Z",
+  "pushed_at": "2024-02-07T07:08:12Z",
+  "git_url": "git://github.com/apache/pulsar.git",
+  "ssh_url": "git@github.com:apache/pulsar.git",
+  "clone_url": "https://github.com/apache/pulsar.git",
+  "svn_url": "https://github.com/apache/pulsar",
+  "homepage": "https://pulsar.apache.org/",
+  "size": 204360,
+  "stargazers_count": 13553,
+  "watchers_count": 13553,
+  "language": "Java",
+  "has_issues": true,
+  "has_projects": true,
+  "has_downloads": true,
+  "has_wiki": true,
+  "has_pages": false,
+  "has_discussions": true,
+  "forks_count": 3515,
+  "mirror_url": null,
+  "archived": false,
+  "disabled": false,
+  "open_issues_count": 1301,
+  "license": {
+    "key": "apache-2.0",
+    "name": "Apache License 2.0",
+    "spdx_id": "Apache-2.0",
+    "url": "https://api.github.com/licenses/apache-2.0",
+    "node_id": "MDc6TGljZW5zZTI="
+  },
+  "allow_forking": true,
+  "is_template": false,
+  "web_commit_signoff_required": false,
+  "topics": [
+    "event-streaming",
+    "messaging",
+    "pubsub",
+    "pulsar",
+    "queuing",
+    "streaming"
+  ],
+  "visibility": "public",
+  "forks": 3515,
+  "open_issues": 1301,
+  "watchers": 13553,
+  "default_branch": "master",
+  "temp_clone_token": null,
+  "custom_properties": {
+
+  },
+  "organization": {
+    "login": "apache",
+    "id": 47359,
+    "node_id": "MDEyOk9yZ2FuaXphdGlvbjQ3MzU5",
+    "avatar_url": "https://avatars.githubusercontent.com/u/47359?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/apache",
+    "html_url": "https://github.com/apache",
+    "followers_url": "https://api.github.com/users/apache/followers",
+    "following_url": "https://api.github.com/users/apache/following{/other_user}",
+    "gists_url": "https://api.github.com/users/apache/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/apache/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/apache/subscriptions",
+    "organizations_url": "https://api.github.com/users/apache/orgs",
+    "repos_url": "https://api.github.com/users/apache/repos",
+    "events_url": "https://api.github.com/users/apache/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/apache/received_events",
+    "type": "Organization",
+    "site_admin": false
+  },
+  "network_count": 3515,
+  "subscribers_count": 403
+}
+`
+        document.getElementById('editor').value = dataset;
+    }
+</script>
+</html>

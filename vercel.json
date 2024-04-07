@@ -1,0 +1,12 @@
+{
+  "build": {
+    "env": {
+      "GO_BUILD_FLAGS": "-ldflags '-s -w'"
+    }
+  },
+  "routes": [
+    { "src": "/api/convert", "dest": "api/convert.go" },
+    { "src": "/", "dest": "index.html" },
+    { "src": "/api", "dest": "index.html" }
+  ]
+}
