@@ -366,8 +366,15 @@ func responseFailed(w http.ResponseWriter, err error) {
 }
 
 func validFieldName(field string) bool {
-	for _, char := range field {
-		if !unicode.IsLetter(char) && char != '_' {
+	if len(field) == 0 {
+		return false
+	}
+	firstChar := rune(field[0])
+	if !unicode.IsLetter(firstChar) && firstChar != '_' {
+		return false
+	}
+	for _, char := range field[1:] {
+		if !unicode.IsLetter(char) && !unicode.IsNumber(char) && char != '_' {
 			return false
 		}
 	}
