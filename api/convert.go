@@ -374,7 +374,10 @@ func validFieldName(field string) bool {
 		return false
 	}
 	firstChar := rune(field[0])
-	if !unicode.IsLetter(firstChar) && firstChar != '_' {
+	if firstChar == '_' {
+		return false
+	}
+	if !unicode.IsLetter(firstChar) {
 		return false
 	}
 	for _, char := range field[1:] {
